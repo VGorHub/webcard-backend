@@ -1,7 +1,14 @@
 package ru.gigastack.webcard.api.dto.auth;
 
-public record AuthResponceDTO (
-        String username,
-        String password
-){
+import lombok.Value;
+import ru.gigastack.webcard.core.model.Roles;
+
+/**
+ * DTO for {@link ru.gigastack.webcard.core.model.AppUser}
+ */
+@Value
+public class AuthResponceDTO {
+    String token;
+    String username;
+    Roles role;
 }
