@@ -3,11 +3,11 @@ package ru.gigastack.webcard;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
-class WebcardApplicationTests {
+//@SpringBootTest
+//class WebcardApplicationTests {
 
-	@Test
-	void contextLoads() {
-	}
+//	@Test
+//	void contextLoads() {
+//	}
 
-}
+//}

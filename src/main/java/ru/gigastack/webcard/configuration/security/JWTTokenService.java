@@ -33,7 +33,7 @@ public class JWTTokenService {
                 .setExpiration(expirationDate)
                 .signWith(this.key, SignatureAlgorithm.HS256)
                 .compact();
-        return "Bearer "+ compactTokenString;
+        return compactTokenString;
 
     }
     public AppUserDto parseToken(String token){

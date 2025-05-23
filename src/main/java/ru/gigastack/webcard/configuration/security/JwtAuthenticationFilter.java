@@ -11,6 +11,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.token.TokenService;
+import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import ru.gigastack.webcard.api.dto.AppUserDto;
 import ru.gigastack.webcard.core.model.Roles;
@@ -18,6 +19,7 @@ import ru.gigastack.webcard.core.model.Roles;
 import java.util.ArrayList;
 import java.util.List;
 
+@Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JWTTokenService tokenService;
 
