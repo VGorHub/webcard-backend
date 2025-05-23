@@ -1,4 +1,4 @@
 package ru.gigastack.webcard.api.dto.auth;
 
-public class LoginRequest {
+public class LoginRequestDTO {
 }
