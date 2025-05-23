@@ -7,5 +7,5 @@ import ru.gigastack.webcard.api.dto.auth.LoginRequestDTO;
 public class AuthController {
 
     @RestController
-    public class login(@RequestBody LoginRequestDTO dto)
+    public class login(@RequestBody LoginRequestDTO dto,)
 }

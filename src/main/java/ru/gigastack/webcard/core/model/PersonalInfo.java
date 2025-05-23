@@ -7,23 +7,11 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table(name = "app_user")
-public class AppUser {
+@Table(name = "personal_info")
+public class PersonalInfo {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id", nullable = false)
     private Long id;
-
-    @Lob
-    @Column(name = "username")
-    private String username;
-
-    @Lob
-    @Column(name = "password_hash")
-    private String passwordHash;
-
-    @Enumerated
-    @Column(name = "role")
-    private Roles role;
 
 }
