@@ -1,37 +1,31 @@
 package ru.gigastack.webcard.api.controller;
 
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import ru.gigastack.webcard.api.dto.auth.AuthResponceDTO;
 import ru.gigastack.webcard.api.dto.auth.LoginRequestDTO;
-import ru.gigastack.webcard.configuration.security.JWTTokenService;
-import ru.gigastack.webcard.core.model.AppUser;
+import ru.gigastack.webcard.configuration.security.AuthenticationService;
 
-import java.net.Authenticator;
 @RestController
 @RequestMapping("/auth")
+@RequiredArgsConstructor
+@Tag(name = "Аутентификация")
 public class AuthController {
+    private final AuthenticationService authenticationService;
 
-    private final AuthenticationManager authenticationManager;
-    private final JWTTokenService tokenService;
 
-    public AuthController(AuthenticationManager authenticationManager, JWTTokenService tokenService) {
-        this.authenticationManager = authenticationManager;
-        this.tokenService = tokenService;
-    }
+    @Operation(summary = "Авторизация пользователя")
     @PostMapping("/login")
-    public AuthResponceDTO login(@RequestBody LoginRequestDTO loginRequest){
-        Authentication auth = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequest.username(),loginRequest.password()));
-        AppUser appUser = (AppUser) auth.getPrincipal();
-        String token = tokenService.generateToken(appUser);
-        return new AuthResponceDTO(token,appUser.getUsername(),appUser.getRole());
+    public AuthResponceDTO signIn(@RequestBody @Valid LoginRequestDTO request) {
+        return authenticationService.signIn(request);
     }
-    @GetMapping("/me")
-    public AppUser me(@AuthenticationPrincipal AppUser appUser) {
-        return appUser;
+    @Operation(summary = "Регистрация пользователя")
+    @PostMapping("/sign-up")
+    public AuthResponceDTO signUp(@RequestBody @Valid LoginRequestDTO request) {
+        return authenticationService.signUp(request);
     }
+
 }

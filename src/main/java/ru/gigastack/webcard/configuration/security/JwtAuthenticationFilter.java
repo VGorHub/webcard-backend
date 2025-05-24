@@ -1,64 +1,68 @@
 package ru.gigastack.webcard.configuration.security;
 
-import com.sun.security.auth.UserPrincipal;
 import io.jsonwebtoken.io.IOException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.token.TokenService;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-import ru.gigastack.webcard.api.dto.AppUserDto;
-import ru.gigastack.webcard.core.model.Roles;
-
-import java.util.ArrayList;
-import java.util.List;
+import ru.gigastack.webcard.core.service.AppUserService;
 
 @Component
+@RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-    private final JWTTokenService tokenService;
-
-    public JwtAuthenticationFilter(JWTTokenService tokenService) {
-        this.tokenService = tokenService;
-    }
+    public static final String BEARER_PREFIX = "Bearer ";
+    public static final String HEADER_NAME = "Authorization";
+    private final JwtService jwtService;
+    private final AppUserService userService;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest httpServletRequest,
-                                    HttpServletResponse httpServletResponse,
-                                    FilterChain filterChain) throws IOException, ServletException, java.io.IOException {
-        String authorizationHeader = httpServletRequest.getHeader("Authorization");
+    protected void doFilterInternal(
+            @NonNull HttpServletRequest request,
+            @NonNull HttpServletResponse response,
+            @NonNull FilterChain filterChain
+    ) throws ServletException, IOException, java.io.IOException {
 
-        if (authorizationHeaderIsInvalid(authorizationHeader)) {
-            filterChain.doFilter(httpServletRequest, httpServletResponse);
+        // Получаем токен из заголовка
+        var authHeader = request.getHeader(HEADER_NAME);
+        if (StringUtils.isEmpty(authHeader) || !StringUtils.startsWith(authHeader, BEARER_PREFIX)) {
+            filterChain.doFilter(request, response);
             return;
         }
 
-        UsernamePasswordAuthenticationToken token = createToken(authorizationHeader);
+        // Обрезаем префикс и получаем имя пользователя из токена
+        var jwt = authHeader.substring(BEARER_PREFIX.length());
+        var username = jwtService.extractUserName(jwt);
 
-        SecurityContextHolder.getContext().setAuthentication(token);
-        filterChain.doFilter(httpServletRequest, httpServletResponse);
-    }
+        if (StringUtils.isNotEmpty(username) && SecurityContextHolder.getContext().getAuthentication() == null) {
+            UserDetails userDetails = userService
+                    .userDetailsService()
+                    .loadUserByUsername(username);
 
-    private boolean authorizationHeaderIsInvalid(String authorizationHeader) {
-        return authorizationHeader == null
-                || !authorizationHeader.startsWith("Bearer ");
-    }
+            // Если токен валиден, то аутентифицируем пользователя
+            if (jwtService.isTokenValid(jwt, userDetails)) {
+                SecurityContext context = SecurityContextHolder.createEmptyContext();
 
-    private UsernamePasswordAuthenticationToken createToken(String authorizationHeader) {
-        String token = authorizationHeader.replace("Bearer ", "");
-        AppUserDto appUserDto = tokenService.parseToken(token);
+                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                        userDetails,
+                        null,
+                        userDetails.getAuthorities()
+                );
 
-        List<GrantedAuthority> authorities = new ArrayList<>();
-
-        if (appUserDto.role() == Roles.admin) {
-            authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
+                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                context.setAuthentication(authToken);
+                SecurityContextHolder.setContext(context);
+            }
         }
-
-        return new UsernamePasswordAuthenticationToken(appUserDto, null, authorities);
+        filterChain.doFilter(request, response);
     }
 }
