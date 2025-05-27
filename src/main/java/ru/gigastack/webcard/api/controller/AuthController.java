@@ -5,9 +5,11 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import ru.gigastack.webcard.api.dto.AppUserDto;
 import ru.gigastack.webcard.api.dto.auth.AuthResponceDTO;
 import ru.gigastack.webcard.api.dto.auth.LoginRequestDTO;
 import ru.gigastack.webcard.configuration.security.AuthenticationService;
+import ru.gigastack.webcard.core.model.AppUser;
 import ru.gigastack.webcard.core.service.AppUserService;
 
 @RestController
@@ -33,5 +35,11 @@ public class AuthController {
     @Operation(summary = "Получить роль ADMIN (для демонстрации)")
     public void getAdmin() {
         service.getAdmin();
+    }
+    @Operation(summary = "Получение информации о пользователе")
+    @GetMapping("/me")
+    public AppUserDto me(){
+        return service.getUser();
+
     }
 }

@@ -5,6 +5,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import ru.gigastack.webcard.api.dto.AppUserDto;
+import ru.gigastack.webcard.api.dto.auth.AuthResponceDTO;
 import ru.gigastack.webcard.core.model.AppUser;
 import ru.gigastack.webcard.core.model.Roles;
 import ru.gigastack.webcard.core.repository.AppUserRepository;
@@ -82,5 +84,10 @@ public class AppUserService {
         var user = getCurrentUser();
         user.setRole(Roles.admin);
         save(user);
+    }
+
+    public AppUserDto getUser() {
+        AppUser user = getCurrentUser();
+        return new AppUserDto(user.getId(), user.getUsername(), user.getRole());
     }
 }
